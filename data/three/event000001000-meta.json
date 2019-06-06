@@ -1,0 +1,20 @@
+{
+    "num_hits": 1770,
+    "num_tracks": 245,
+    "num_important_tracks": 26,
+    "num_noise": 391,
+    "random_seed": 104048237,
+    "time": "2019-06-06T16:10:13.386165",
+    "params": {
+        "input_path": "C:\\Users\\user\\Documents\\qpr\\venv\\lib\\site-packages\\hepqpr_qallse-0.1.0-py3.7.egg\\hepqpr\\qallse\\dsmaker\\data\\event000001000",
+        "output_path": ".",
+        "density": 0.03,
+        "high_pt_cut": 1.0,
+        "double_hits_ok": false,
+        "gen_doublets": true,
+        "prefix": "../data/three",
+        "random_seed": null,
+        "phi_bounds": null,
+        "min_hits_per_track": 5
+    }
+}
