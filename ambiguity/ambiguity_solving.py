@@ -16,11 +16,11 @@ class Track:
         self.particle_id = self.metrics[4]
         #we just define a good track to be one with score >= 0.5
         #this is what Nick has been doing
-        self.is_valid = self.metrics[0] >= 0.5
         self.inner_hit = metrics[5]
         self.d0 = metrics[6]
         self.z0 = metrics[7]
         self.quality = metrics[8]
+        self.is_valid = self.compute_score() >= 0.5
 
     def compute_score(self):
         prob = 1
@@ -52,7 +52,7 @@ class DataSet:
         self.tracks = self.load_data(track_path)
         self.conflict_value = conflict_value
         self.find_track_conflicts()
-        self.Q = self.generate_qubo() 
+        self.Q = self.generate_qubo()
 
     def load_data(self, track_path):
         #this determines the minimum number of hits we will allow tracks to have
@@ -81,11 +81,15 @@ class DataSet:
             for hit in eval(track).keys():
                 t_hit.append(eval(hit))
             hit_list.append(t_hit)
-                
+
 
         tracks = []
         for i in range(len(scores)):
             if len(hit_list[i]) >= hit_cut:
+                # Here, scores[] is currently not being used.
+                # Instead, Alex's compute_score is used to compute the score.
+                # Tested it casually and precision and recall are now both 99%, compared to a precision of 17% and recall of 99% previously.
+                # The next step, to be done shortly, is to look into how precision and recall are determined, and see if these numbers are actually correct.
                 t = Track(ids[i], hit_list[i], [scores[i], hits[i], holes[i], pt[i],pid[i], inner_hits[i], d0[i], z0[i], tq[i]])
                 tracks.append(t)
         return tracks
@@ -134,4 +138,3 @@ class DataSet:
         #taken and not taken have the ids of tracks the qubo identified as good
         #do something with the chosen tracks
         return taken,not_taken
-
