@@ -50,7 +50,7 @@ class Track:
         return "Track " + str(self.tid)
 
 class DataSet:
-    def __init__(self, track_path : str, conflict_value):
+    def __init__(self, track_path : str, conflict_value=1):
         #load data from tracks
         self.tracks = self.load_data(track_path)
         self.conflict_value = conflict_value

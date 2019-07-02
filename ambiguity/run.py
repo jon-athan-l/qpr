@@ -1,7 +1,7 @@
 from ambiguity_solving import DataSet
 import numpy as np
 
-d = DataSet('track_data_tqscore.csv',1)
+d = DataSet('event_data/track_data_tqscore.csv',1)
 good_tid = [t.tid for t in d.tracks if t.is_valid]
 
 good_tracks = []
@@ -51,7 +51,7 @@ plt.show()
 def compare(good_tracks, bad_tracks, var_string):
     good = [eval('t.' + var_string) for t in good_tracks]
     bad = [eval('t.' + var_string) for t in bad_tracks]
-    bins = np.linspace(min(bad + good), max(bad + good), 10)   
+    bins = np.linspace(min(bad + good), max(bad + good), 10)
     plt.hist(bad, bins)
     plt.hist(good,bins)
     plt.show()
