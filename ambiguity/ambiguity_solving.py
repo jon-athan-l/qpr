@@ -19,8 +19,11 @@ class Track:
         self.inner_hit = metrics[5]
         self.d0 = metrics[6]
         self.z0 = metrics[7]
-        self.quality = metrics[8]
-        self.is_valid = self.compute_score() >= 0.5
+        #new
+        self.quality = self.compute_score()
+        #self.quality = metrics[8]
+        self.is_valid = metrics[0] >= 0.5
+        #self.is_valid = self.compute_score() >= 0.5
 
     def compute_score(self):
         prob = 1
@@ -86,10 +89,6 @@ class DataSet:
         tracks = []
         for i in range(len(scores)):
             if len(hit_list[i]) >= hit_cut:
-                # Here, scores[] is currently not being used.
-                # Instead, Alex's compute_score is used to compute the score.
-                # Tested it casually and precision and recall are now both 99%, compared to a precision of 17% and recall of 99% previously.
-                # The next step, to be done shortly, is to look into how precision and recall are determined, and see if these numbers are actually correct.
                 t = Track(ids[i], hit_list[i], [scores[i], hits[i], holes[i], pt[i],pid[i], inner_hits[i], d0[i], z0[i], tq[i]])
                 tracks.append(t)
         return tracks
