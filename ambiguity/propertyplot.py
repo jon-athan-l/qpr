@@ -72,23 +72,14 @@ for track in trackSet:
     # if the track is not reconstructable (for example, if the particle was actually detector
     # noise), the track ID, track_truth, is set to 0 by QPR convention.
     # It then doesn't make sense to include this efficiency value--we will disregard it.
+    if (track_truth != 0):
+        this_efficiency = len(true_hits) / int(truth_tracks[truth_tracks.particle_id == track_truth]["nhits"])
+    this_fake_rate = len(true_hits) / track.num_hits
     if track in good_tracks:
-        if (track_truth != 0):
-            print("EFFICIENCY: ", len(true_hits), int(truth_tracks[truth_tracks.particle_id == track_truth]["nhits"]))
-            this_efficiency = len(true_hits) / int(truth_tracks[truth_tracks.particle_id == track_truth]["nhits"])
-            efficiency.append(this_efficiency)
-        print("FAKE RATE: ", len(true_hits), track.num_hits)
-        print()
-        this_fake_rate = len(true_hits) / track.num_hits
+        efficiency.append(this_efficiency)
         fake_rate.append(this_fake_rate)
     else:
-        if (track_truth != 0):
-            print("EFFICIENCY: ", len(true_hits), int(truth_tracks[truth_tracks.particle_id == track_truth]["nhits"]))
-            this_efficiency = len(true_hits) / int(truth_tracks[truth_tracks.particle_id == track_truth]["nhits"])
-            bad_efficiency.append(this_efficiency)
-        print("FAKE RATE: ", len(true_hits), track.num_hits)
-        print()
-        this_fake_rate = len(true_hits) / track.num_hits
+        bad_efficiency.append(this_efficiency)
         bad_fake_rate.append(this_fake_rate)
 
 # # creates a new property for each track--all the
