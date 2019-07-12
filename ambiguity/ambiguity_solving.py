@@ -24,7 +24,9 @@ class Track:
         #self.quality = metrics[8]
         self.is_valid = metrics[0] >= 0.5
         #self.is_valid = self.compute_score() >= 0.5
-
+        self.phi = metrics[9]
+        self.theta = metrics[10]
+        
     def compute_score(self):
         prob = 1
         prob = prob * np.log10(self.pt) - 1 #The ATLAS code gave p_t = 100 MeV/c a score of 1
@@ -89,7 +91,7 @@ class DataSet:
         tracks = []
         for i in range(len(scores)):
             if len(hit_list[i]) >= hit_cut:
-                t = Track(ids[i], hit_list[i], [scores[i], hits[i], holes[i], pt[i],pid[i], inner_hits[i], d0[i], z0[i], tq[i]])
+                t = Track(ids[i], hit_list[i], [scores[i], hits[i], holes[i], pt[i],pid[i], inner_hits[i], d0[i], z0[i], tq[i], phi[i], theta[i]])
                 tracks.append(t)
         return tracks
 
