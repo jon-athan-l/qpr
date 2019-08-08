@@ -6,7 +6,7 @@ Particle track reconstruction at LBNL.
 Create a virtual environment and run setup.py in `qpr/qallse` (QPR's engine) to set up all the necessary files!
 And then activate the virtual environment to work in your own mirror world :)
 
-Running Qallse, which generates potential reconstructed tracks and the input to the ambiguity resolution, can best be explained by [its creator](https://github.com/derlin/hepqpr-qallse#setup-and-usage) ;).
+Running Qallse, which generates potential reconstructed tracks and the input to the ambiguity resolution, can best be explained by [its creator](https://github.com/derlin/hepqpr-qallse#setup-and-usage)!
 
 Generate some input tracks from Qallse, and then start working in the `qpr/ambiguity` directory.
 
