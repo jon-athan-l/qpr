@@ -194,7 +194,12 @@ class Engine:
 
         return purities, recalls
 
-    def find_shared_hits(self, plot=True, remember=False, verbose=False):
+    def find_shared_hits(self, plot=True, phi_slice=False, remember=False, verbose=False):
+        def phi_slicing(phi_slice):
+            if not phi_slice:
+                return True
+            return (abs(track.phi - other_track.phi) <= math.pi / phi_slice)
+
         # checked is a dictionary that stores all the tracks another track has been compared with already.
         checked = {}
         for track in self.ground.valid_tracks:
@@ -207,7 +212,8 @@ class Engine:
             track.nonshared_hits = set()
 
             for other_track in self.ground.valid_tracks:
-                if (other_track not in checked[track]):
+                if (other_track not in checked[track] and phi_slicing(phi_slice)):
+                    print('WORKING!')
                     checked[track].append(other_track)
                     other_hits = frozenset(other_track.hits)
                     if not hits.isdisjoint(other_hits):
@@ -226,9 +232,8 @@ class Engine:
             track.shared_hits = set()
             track.nonshared_hits = set()
 
-            # phi slicing: (abs(track.phi - other_track.phi) <= math.pi / 192)
             for other_track in self.ground.invalid_tracks:
-                if (other_track not in checked[track]):
+                if (other_track not in checked[track] and phi_slicing(phi_slice)):
                     checked[track].append(other_track)
                     other_hits = frozenset(other_track.hits)
                     if not hits.isdisjoint(other_hits):
@@ -254,66 +259,73 @@ class Engine:
             if track in self.ground.valid_tracks:
                 good_num_shared_tracks.append(len(track.shared_tracks))
                 good_num_shared_hits.append(len(track.shared_hits))
+                for i in range(len(track.nonshared_hits)):
+                    good_num_shared_tracks.append(0)
+                    good_num_shared_hits.append(0)
             else:
                 bad_num_shared_tracks.append(len(track.shared_tracks))
                 bad_num_shared_hits.append(len(track.shared_hits))
+                for i in range(len(track.nonshared_hits)):
+                    bad_num_shared_tracks.append(0)
+                    bad_num_shared_hits.append(0)
 
         plt.figure()
-
         # Plots the number of tracks that share hits for all tracks.
-        plt.subplot(411)
+        plt.subplot(121)
         bins = np.arange(-1, max(num_shared_hits) + 2, 1)
-        x, bins, p = plt.hist([good_num_shared_tracks, bad_num_shared_tracks], bins, stacked=True, color=['blue','red'])
+        x, bins, p = plt.hist(good_num_shared_tracks, bins, color='darkcyan',  alpha=0.7, label='Valid tracks', edgecolor='darkslategray')
+        y, bins, p = plt.hist(bad_num_shared_tracks, bins, color='powderblue',  alpha=0.7, label='Invalid tracks', edgecolor='darkslategray')
         plt.legend()
         plt.xlabel('Number of tracks that share hits')
         plt.ylabel('Number of tracks')
         plt.title('Number of shared tracks on all tracks')
 
-        # Plots the number of hits that are shared for all tracks.
-        plt.subplot(412)
-        bins = np.arange(-1, max(num_shared_hits) + 2, 1)
-        x, bins, p = plt.hist([good_num_shared_hits, bad_num_shared_hits], bins, stacked=True, color=['blue','red'])
-        plt.legend()
-        plt.xlabel('Number of hits shared with other tracks')
-        plt.ylabel('Number of tracks')
-        plt.title('Number of shared hits on all tracks')
-
         # Plots the number of tracks that share hits per good track.
-        plt.subplot(425)
+        plt.subplot(222)
         bins = np.arange(-1, max(good_num_shared_tracks) + 2, 1)
-        x, bins, p = plt.hist(good_num_shared_tracks, bins, color='blue', label='Shared tracks')
+        x, bins, p = plt.hist(good_num_shared_tracks, bins, color='darkcyan', label='Valid tracks', edgecolor='darkslategray')
         plt.legend()
         plt.xlabel('Number of tracks that share hits')
         plt.ylabel('Number of tracks')
         plt.title('Number of shared tracks on valid tracks')
 
+        # Plots the number of tracks that share hits per bad track.
+        plt.subplot(224)
+        bins = np.arange(-1, max(bad_num_shared_tracks) + 2, 1)
+        x, bins, p = plt.hist(bad_num_shared_tracks, bins, color='powderblue', label='Invalid tracks', edgecolor='darkslategray')
+        plt.legend()
+        plt.xlabel('Number of tracks that share hits')
+        plt.ylabel('Number of tracks')
+        plt.title('Number of shared tracks on invalid tracks')
+        plt.show()
+
+        # Plots the number of hits that are shared for all tracks.
+        plt.subplot(121)
+        bins = np.arange(-1, max(num_shared_hits) + 2, 1)
+        x, bins, p = plt.hist(good_num_shared_hits, bins, color='darkcyan', alpha=0.7, label='Valid tracks', edgecolor='darkslategray')
+        y, bins, p = plt.hist(bad_num_shared_hits, bins, color='powderblue', alpha=0.7, label = 'Invalid tracks', edgecolor='darkslategray')
+        plt.legend()
+        plt.xlabel('Number of hits shared with other tracks')
+        plt.ylabel('Number of tracks')
+        plt.title('Number of shared hits on all tracks')
+
         # Plots the number of hits that are shared per good track.
-        plt.subplot(427)
+        plt.subplot(222)
         bins = np.arange(-1, max(good_num_shared_hits) + 2, 1)
-        x, bins, p = plt.hist(good_num_shared_hits, bins, color='blue', label='Shared hits')
+        x, bins, p = plt.hist(good_num_shared_hits, bins, color='darkcyan', label='Valid tracks', edgecolor='darkslategray')
         plt.legend()
         plt.xlabel('Number of hits shared with other tracks')
         plt.ylabel('Number of tracks')
         plt.title('Number of shared hits on valid tracks')
 
-        # Plots the number of tracks that share hits per bad track.
-        plt.subplot(426)
-        bins = np.arange(-1, max(bad_num_shared_tracks) + 2, 1)
-        x, bins, p = plt.hist(bad_num_shared_tracks, bins, color='red')
-        plt.legend()
-        plt.xlabel('Number of tracks that share hits')
-        plt.ylabel('Number of tracks')
-        plt.title('Number of shared tracks on bad tracks')
-
         # Plots the number of hits that are shared per bad track.
-        plt.subplot(428)
+        plt.subplot(224)
         bins = np.arange(-1, max(bad_num_shared_hits) + 2, 1)
-        x, bins, p = plt.hist(bad_num_shared_hits, bins, color='red')
+        x, bins, p = plt.hist(bad_num_shared_hits, bins, color='powderblue', label='Invalid tracks', edgecolor='darkslategray')
         plt.legend()
         plt.xlabel('Number of hits shared with other tracks')
         plt.ylabel('Number of tracks')
-        plt.title('Number of shared hits on bad tracks')
-
+        plt.title('Number of shared hits on invalid tracks')
         plt.show()
 
 
@@ -324,95 +336,183 @@ class Engine:
             euclidian = math.sqrt(px**2 + py**2 + pz**2)
             return math.atanh(pz / euclidian)
 
-        def plot_spatials(reconstructed, true):
-            reconstructed_pts = reconstructed[0]
-            reconstructed_thetas = reconstructed[1]
-            reconstructed_etas = reconstructed[2]
-            reconstructed_phis = reconstructed[3]
+        def plot_spatials(valid, invalid, truth):
+            valid_reconstructed_pts = valid[0]
+            valid_reconstructed_thetas = valid[1]
+            valid_reconstructed_etas = valid[2]
+            valid_reconstructed_phis = valid[3]
 
-            true_pts = true[0]
-            true_thetas = true[1]
-            true_etas = true[2]
-            true_phis = true[3]
+            invalid_reconstructed_pts = invalid[0]
+            invalid_reconstructed_thetas = invalid[1]
+            invalid_reconstructed_etas = invalid[2]
+            invalid_reconstructed_phis = invalid[3]
 
-            print(min(reconstructed_thetas), " min rec theta")
+            true_pts = truth[0]
+            true_thetas = truth[1]
+            true_etas = truth[2]
+            true_phis = truth[3]
+
+            print(min(valid_reconstructed_thetas), " min rec theta")
             print(min(true_etas), " min true eta")
 
             plt.figure()
-            bins = np.linspace(min(reconstructed_thetas) - 2, max(reconstructed_thetas) + 2)
-            x, bins, p = plt.hist(reconstructed_thetas, bins, color='blue', label='Reconstructed thetas')
+            plt.subplot(2, 1, 1)
+            bins = np.linspace(min(valid_reconstructed_thetas), max(valid_reconstructed_thetas))
+            x, bins, p = plt.hist(valid_reconstructed_thetas, bins, color='darkcyan', alpha=0.7, label='Valid reconstructed thetas', edgecolor='darkslategray')
+            y, bins, p = plt.hist(invalid_reconstructed_thetas, bins, color='powderblue', alpha=0.7, label='Invalid reconstructed thetas', edgecolor='darkslategray')
             plt.legend()
             plt.xlabel('Reconstructed thetas')
             plt.ylabel('Number of tracks')
             plt.title('Reconstructed theta distribution')
+
+            plt.subplot(2, 2, 3)
+            bins = np.linspace(min(valid_reconstructed_thetas), max(valid_reconstructed_thetas))
+            x, bins, p = plt.hist(valid_reconstructed_thetas, bins, color='darkcyan', alpha=0.7, label='Valid reconstructed thetas', edgecolor='darkslategray')
+            plt.legend()
+            plt.xlabel('Valid reconstructed thetas')
+            plt.ylabel('Number of tracks')
+            plt.title('Valid reconstructed theta distribution')
+
+            plt.subplot(2, 2, 4)
+            bins = np.linspace(min(invalid_reconstructed_thetas), max(invalid_reconstructed_thetas))
+            x, bins, p = plt.hist(invalid_reconstructed_thetas, bins, color='powderblue', alpha=0.7, label='Invalid reconstructed thetas', edgecolor='darkslategray')
+            plt.legend()
+            plt.xlabel('Invalid reconstructed thetas')
+            plt.ylabel('Number of tracks')
+            plt.title('Invalid reconstructed theta distribution')
             plt.show()
 
-            bins = np.linspace(min(reconstructed_etas) - 2, max(reconstructed_etas) + 2)
-            x, bins, p = plt.hist(reconstructed_etas, bins, color='blue', label='Reconstructed etas')
+            plt.subplot(1, 1, 1)
+            bins = np.linspace(min(true_thetas), max(true_thetas))
+            x, bins, p = plt.hist(true_thetas, bins, color='steelblue', alpha=0.7, label='True thetas', edgecolor='darkslategray')
+            y, bins, p = plt.hist(valid_reconstructed_thetas, bins, color='darkcyan', alpha=0.7, label='Valid reconstructed thetas', edgecolor='darkslategray')
+            plt.legend()
+            plt.xlabel('True and valid reconstructed thetas')
+            plt.ylabel('Number of tracks')
+            plt.title('True theta and valid reconstructed theta distribution')
+            plt.show()
+
+            plt.subplot(2, 1, 1)
+            bins = np.linspace(min(valid_reconstructed_etas), max(valid_reconstructed_etas))
+            x, bins, p = plt.hist(valid_reconstructed_etas, bins, color='darkcyan', alpha = 0.7, label='Valid reconstructed etas', edgecolor='darkslategray')
+            y, bins, p = plt.hist(invalid_reconstructed_etas, bins, color='powderblue', alpha = 0.7, label='Invalid reconstructed etas', edgecolor='darkslategray')
             plt.legend()
             plt.xlabel('Reconstructed etas')
             plt.ylabel('Number of tracks')
             plt.title('Reconstructed eta distribution')
+
+            plt.subplot(2, 2, 3)
+            bins = np.linspace(min(valid_reconstructed_etas), max(valid_reconstructed_etas))
+            x, bins, p = plt.hist(valid_reconstructed_etas, bins, color='darkcyan', alpha=0.7, label='Valid reconstructed etas', edgecolor='darkslategray')
+            plt.legend()
+            plt.xlabel('Valid reconstructed etas')
+            plt.ylabel('Number of tracks')
+            plt.title('Valid reconstructed eta distribution')
+
+            plt.subplot(2, 2, 4)
+            bins = np.linspace(min(invalid_reconstructed_etas), max(invalid_reconstructed_etas))
+            x, bins, p = plt.hist(invalid_reconstructed_etas, bins, color='powderblue', alpha=0.7, label='Invalid reconstructed etas', edgecolor='darkslategray')
+            plt.legend()
+            plt.xlabel('Invalid reconstructed etas')
+            plt.ylabel('Number of tracks')
+            plt.title('Invalid reconstructed eta distribution')
             plt.show()
 
-            bins = np.linspace(min(reconstructed_phis) - 2, max(reconstructed_phis) + 2)
-            x, bins, p = plt.hist(reconstructed_phis, bins, color='blue', label='Reconstructed phis')
+            plt.subplot(1, 1, 1)
+            bins = np.linspace(min(true_etas), max(true_etas))
+            x, bins, p = plt.hist(true_etas, bins, color='steelblue', alpha=0.7, label='True etas', edgecolor='darkslategray')
+            y, bins, p = plt.hist(valid_reconstructed_etas, bins, color='darkcyan', alpha=0.7, label='Valid reconstructed etas', edgecolor='darkslategray')
+            z, bins, p = plt.hist(invalid_reconstructed_etas, bins, color='forestgreen', alpha=0.7, label='Invalid reconstructed etas', edgecolor='darkslategray')
+            plt.legend()
+            plt.xlabel('True, valid, and invalid reconstructed etas')
+            plt.ylabel('Number of tracks')
+            plt.title('True eta and valid reconstructed eta distribution')
+            plt.show()
+
+
+            plt.subplot(2, 1, 1)
+            bins = np.linspace(min(valid_reconstructed_phis), max(valid_reconstructed_phis))
+            x, bins, p = plt.hist(valid_reconstructed_phis, bins, color='darkcyan', alpha=0.7, label='Valid reconstructed phis', edgecolor='darkslategray')
+            y, bins, p = plt.hist(invalid_reconstructed_phis, bins, color='powderblue', alpha=0.7, label='Invalid reconstructed phis', edgecolor='darkslategray')
             plt.legend()
             plt.xlabel('Reconstructed phis')
             plt.ylabel('Number of tracks')
             plt.title('Reconstructed phi distribution')
-            plt.show()
 
-            bins = np.linspace(min(reconstructed_pts) - 2, max(reconstructed_pts) + 2)
-            x, bins, p = plt.hist(reconstructed_pts, bins, color='blue', label='Reconstructed Pts')
+            plt.subplot(2, 2, 3)
+            bins = np.linspace(min(valid_reconstructed_phis), max(valid_reconstructed_phis))
+            x, bins, p = plt.hist(valid_reconstructed_phis, bins, color='darkcyan', alpha=0.7, label='Valid reconstructed phis', edgecolor='darkslategray')
             plt.legend()
-            plt.xlabel('Reconstructed Pts')
+            plt.xlabel('Valid reconstructed phis')
             plt.ylabel('Number of tracks')
-            plt.title('Reconstructed Pt distribution')
-            plt.show()
+            plt.title('Valid reconstructed phi distribution')
 
-            bins = np.linspace(min(true_thetas) - 2, max(true_thetas) + 2)
-            x, bins, p = plt.hist(true_thetas, bins, color='blue', label='True thetas')
+            plt.subplot(2, 2, 4)
+            bins = np.linspace(min(invalid_reconstructed_phis), max(invalid_reconstructed_phis))
+            x, bins, p = plt.hist(invalid_reconstructed_phis, bins, color='powderblue', alpha=0.7, label='Invalid reconstructed phis', edgecolor='darkslategray')
             plt.legend()
-            plt.xlabel('True thetas')
+            plt.xlabel('Invalid reconstructed phis')
             plt.ylabel('Number of tracks')
-            plt.title('True theta distribution')
+            plt.title('Invalid reconstructed phi distribution')
             plt.show()
 
-            bins = np.linspace(min(true_etas) - 2, max(true_etas) + 2)
-            x, bins, p = plt.hist(true_etas, bins, color='blue', label='True etas')
+            plt.subplot(1, 1, 1)
+            bins = np.linspace(min(true_phis), max(true_phis))
+            x, bins, p = plt.hist(true_phis, bins, color='steelblue', alpha=0.7, label='True phis', edgecolor='darkslategray')
+            y, bins, p = plt.hist(valid_reconstructed_phis, bins, color='darkcyan', alpha=0.7, label='Valid reconstructed phis', edgecolor='darkslategray')
             plt.legend()
-            plt.xlabel('True etas')
+            plt.xlabel('True and valid reconstructed phis')
             plt.ylabel('Number of tracks')
-            plt.title('True eta distribution')
+            plt.title('True phi and valid reconstructed phi distribution')
             plt.show()
 
-            bins = np.linspace(min(true_phis) - 2, max(true_phis) + 2)
-            x, bins, p = plt.hist(true_phis, bins, color='blue', label='True phis')
+
+            plt.subplot(2, 1, 1)
+            bins = np.linspace(min(valid_reconstructed_pts), max(valid_reconstructed_pts))
+            x, bins, p = plt.hist(valid_reconstructed_pts, bins, color='darkcyan', alpha=0.7, label='Valid reconstructed pts', edgecolor='darkslategray')
+            y, bins, p = plt.hist(invalid_reconstructed_pts, bins, color='powderblue', alpha=0.7, label='Invalid reconstructed pts', edgecolor='darkslategray')
             plt.legend()
-            plt.xlabel('true phis')
+            plt.xlabel('Reconstructed pts')
             plt.ylabel('Number of tracks')
-            plt.title('true phi distribution')
-            plt.show()
+            plt.title('Reconstructed pt distribution')
 
-            bins = np.linspace(min(true_pts) - 2, max(true_pts) + 2)
-            x, bins, p = plt.hist(true_pts, bins, color='blue', label='True Pts')
+            plt.subplot(2, 2, 3)
+            bins = np.linspace(min(valid_reconstructed_pts), max(valid_reconstructed_pts))
+            x, bins, p = plt.hist(valid_reconstructed_pts, bins, color='darkcyan', alpha=0.7, label='Valid reconstructed pts', edgecolor='darkslategray')
             plt.legend()
-            plt.xlabel('True Pts')
+            plt.xlabel('Valid reconstructed pts')
             plt.ylabel('Number of tracks')
-            plt.title('True Pt distribution')
+            plt.title('Valid reconstructed pt distribution')
+
+            plt.subplot(2, 2, 4)
+            bins = np.linspace(min(invalid_reconstructed_pts), max(invalid_reconstructed_pts))
+            x, bins, p = plt.hist(invalid_reconstructed_pts, bins, color='powderblue', alpha=0.7, label='Invalid reconstructed pts', edgecolor='darkslategray')
+            plt.legend()
+            plt.xlabel('Invalid reconstructed pts')
+            plt.ylabel('Number of tracks')
+            plt.title('Invalid reconstructed pt distribution')
+            plt.show()
+
+            plt.subplot(1, 1, 1)
+            bins = np.linspace(min(true_pts), max(true_pts))
+            x, bins, p = plt.hist(true_pts, bins, color='steelblue', alpha=0.7, label='True pts', edgecolor='darkslategray')
+            y, bins, p = plt.hist(valid_reconstructed_pts, bins, color='darkcyan', alpha=0.7, label='Valid reconstructed pts', edgecolor='darkslategray')
+            plt.legend()
+            plt.xlabel('True and valid reconstructed pts')
+            plt.ylabel('Number of tracks')
+            plt.title('True pt and valid reconstructed pt distribution')
             plt.show()
 
 
-        reconstructed_pts = [math.log(track.pt) for track in self.ground.valid_tracks]
-        reconstructed_thetas = [track.theta for track in self.ground.valid_tracks if track.theta >= 0] + [math.pi + track.theta for track in self.ground.valid_tracks if track.theta < 0]
-        reconstructed_etas = [0 - math.log(abs(math.tan(theta) / 2)) for theta in reconstructed_thetas]
-        reconstructed_phis = [track.phi for track in self.ground.valid_tracks]
+        valid_reconstructed_pts = [math.log(track.pt, 10) for track in self.ground.valid_tracks]
+        valid_reconstructed_thetas = [track.theta for track in self.ground.valid_tracks if track.theta >= 0] + [math.pi + track.theta for track in self.ground.valid_tracks if track.theta < 0]
+        valid_reconstructed_etas = [0 - math.log(abs(math.tan(theta) / 2)) for theta in valid_reconstructed_thetas]
+        valid_reconstructed_phis = [track.phi for track in self.ground.valid_tracks]
 
-        reconstructed_pts = [math.log(track.pt) for track in self.ground.valid_tracks]
-        reconstructed_thetas = [track.theta for track in self.ground.valid_tracks if track.theta >= 0] + [math.pi + track.theta for track in self.ground.valid_tracks if track.theta < 0]
-        reconstructed_etas = [0 - math.log(abs(math.tan(theta) / 2)) for theta in reconstructed_thetas]
-        reconstructed_phis = [track.phi for track in self.ground.valid_tracks]
+        invalid_reconstructed_pts = [math.log(track.pt, 10) for track in self.ground.invalid_tracks]
+        invalid_reconstructed_thetas = [track.theta for track in self.ground.invalid_tracks if track.theta >= 0] + [math.pi + track.theta for track in self.ground.invalid_tracks if track.theta < 0]
+        invalid_reconstructed_etas = [0 - math.log(abs(math.tan(theta) / 2)) for theta in invalid_reconstructed_thetas]
+        invalid_reconstructed_phis = [track.phi for track in self.ground.invalid_tracks]
 
         px = self.ground.track_info["px"]
         py = self.ground.track_info["py"]
@@ -423,15 +523,16 @@ class Engine:
         true_etas = [find_eta(x, y, z) for x, y, z in zip(px, py, pz)]
         true_phis = [math.atan(y / x) for y, x in zip(py, px)]
 
-        reconstructed = [reconstructed_pts, reconstructed_thetas, reconstructed_etas, reconstructed_phis]
-        true = [true_pts, true_thetas, true_etas, true_phis]
+        valid = [valid_reconstructed_pts, valid_reconstructed_thetas, valid_reconstructed_etas, valid_reconstructed_phis]
+        invalid = [invalid_reconstructed_pts, invalid_reconstructed_thetas, invalid_reconstructed_etas, invalid_reconstructed_phis]
+        truth = [true_pts, true_thetas, true_etas, true_phis]
 
         if (plot):
-            plot_spatials(reconstructed, true)
+            plot_spatials(valid, invalid, truth)
 
-        return reconstructed, true
+        return valid, invalid, truth
 
 
 """ RUN HERE """
 e = Engine()
-e.find_shared_hits()
+e.find_spatials()
