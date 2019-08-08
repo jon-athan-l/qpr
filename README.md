@@ -5,15 +5,15 @@ Make sure you create a virtual environment and run setup.py in qpr/qallse (QPR's
 And then activate the virtual environment to work in your own mirror world :)
 
 
-*A high-level overview*
+## A high-level overview
 
-AMBIGUITY: runs ambiguity resolution on a set of reconstructed tracks. Uses quantum annealing to solve the NP-hard QUBO (Quadratic Unconstrained Binary Optimization) problem of classifying "true" tracks.
+**Ambiguity**: runs ambiguity resolution on a set of reconstructed tracks. Uses quantum annealing to solve the NP-hard QUBO (Quadratic Unconstrained Binary Optimization) problem of classifying "true" tracks.
 
-QALLSE: reconstructs a set of candidate tracks based on raw particle collider input, using quantum annealing to solve the NP-hard QUBO (Quadratic Unconstrained Binary Optimization) problem of classifying "true" doublets.
+**Qallse"": reconstructs a set of candidate tracks based on raw particle collider input, using quantum annealing to solve the NP-hard QUBO (Quadratic Unconstrained Binary Optimization) problem of classifying "true" doublets.
 
-DATA: relevant bits of data, including plots and simulated collider data (so we have an "objective truth" to compare against).
+**Data**: relevant bits of data, including plots and simulated collider data (so we have an "objective truth" to compare against).
 
-*Quantum Annealing*
+## Quantum Annealing
 
 Solves the NP-hard QUBO (Quadratic Unconstrained Binary Optimization) problem (finding the global maximum of a quadratic function). Shares a striking similarity and identical functionality with a GNN (Graph Neural Network), a technique used in deep learning in which a directed graph is built and weights are assigned to its nodes, which modify the data that pass through them. The node weights are updated many times. Eventually the weights become accurate and the graph is able to successfully predict outcomes that match the context of the dataset it is trained on. Graph neural networks lie in the intersection of graph theory and machine learning.
 
@@ -26,3 +26,10 @@ An adjacency matrix is created to capture the graph in matrix form (this moves i
 Fascinatingly, the quantum annealer is then able to model the *interactions* between the tracks.
 
 Very cool!
+
+
+### Contributors
+**Lucy Linder**, who wrote the incredible Qallse engine;
+**Alex Smith**, who worked on the ambiguity resolution before me and wrote the backbone of the quantum annealing code;
+**Paolo Calafiura**, my advisor at LBNL and a wonderful person to get advice from; and 
+**Heather Gray**, my advisor at LBNL and who helped with much of the theory and design behind the project.
